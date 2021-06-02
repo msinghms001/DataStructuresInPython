@@ -1,0 +1,149 @@
+from collections import defaultdict
+from queue import PriorityQueue
+import sys
+
+class Node:
+  def __init__(self,data,weit,):
+    self.data = data
+    self.weit = weit
+  def __str__(self):
+    return str(self.data)
+  def __lt__(self, other):
+    if(self.data < other.data):
+      return 1
+    return -1
+  def __iter__(self):
+    pass
+
+class Graph:
+  def __init__(self,verts):
+    self.verts  = verts
+    self.adjlist = defaultdict(list)
+    self.prev={}
+
+  def addEge(self,src,dst,weit):
+    if src not in self.adjlist:
+      self.adjlist[src].append(Node(src,0))
+    if dst not in self.adjlist:
+      self.adjlist[dst].append(Node(dst,0))
+    
+    self.adjlist[src].append(Node(dst,weit))
+    self.adjlist[dst].append(Node(src,weit))
+    
+
+  def printLis(self):
+    
+    for key in self.adjlist.keys():
+      print(f'{key} =>', end =" ") 
+      for items in self.adjlist[key]:
+        print(items.data,end=' ')
+      print()
+    
+    #print(self.adjlist)  
+  def get_vertx(self,v):
+    return self.adjlist[v][0]
+    
+  def shortest(self,v,path):
+    #print("\n\nPretty prevs \n\n",(self.prev))
+    
+    if self.prev[v.data] :
+      path.append(self.prev[v.data].data)
+      self.shortest(self.prev[v.data], path)
+    return
+    
+    
+    
+    
+      
+      
+  def dijkstra(self,start):
+    
+    self.dis  = dict()
+    
+    for key in self.adjlist.keys():
+      self.dis[key] = sys.maxsize
+      self.prev[key] = None
+      
+    #print(self.dis)
+    self.dis[start]=0
+    #print(dis)
+    
+    sset = list()
+    self.q = PriorityQueue()
+    for item in self.dis:
+      #print(self.dis[item] ,"list ==>",self.adjlist[item] ) 
+      self.q.put( (self.dis[item] , item ) )
+    
+          
+    while len(sset)!=self.verts:
+      u = self.q.get();
+      current = u[1]
+      sset.append(u[1])
+      ##print(f"--->> pushed {u[1]} to set <<---")
+      self.e_Neighbours(u[1],sset)
+      #print(sset)
+     ## print("\n\n",str(self.dis))
+    
+    
+    
+
+  def e_Neighbours(self,u,settled):
+    edgeDistance = -1
+    newDistance = -1
+   #print("adj list of ",u," is ",end=" ")
+   #for i in range(len(self.adjlist[u])):
+   #  print( self.adjlist[u][i], end=' ' )
+   #print()
+    
+    for i in range(len(self.adjlist[u])):
+      v = self.adjlist[u][i];
+     #print("from ",u,"neibs.. ",v.data)
+      
+      if v.data not in settled:
+        edgeDistance = v.weit
+        #print(v.data,v.weit)
+        
+        newDistance = self.dis[u] + edgeDistance
+        if (newDistance < self.dis[v.data]):
+          self.dis[v.data] = newDistance
+          self.prev[v.data] = self.get_vertx(u)
+      #   print("success  set new dist of",v.data,"to",newDistance)
+          
+        #print("==> added node ",(v.data, self.dis[v.data]))
+        #self.q.put((v.data, self.dis[v.data]))
+
+    
+    # Rebuild heap
+    # 1. Pop every item    
+    while not self.q.empty():
+      self.q.get()
+    
+    # 2. Put all vertices not visited into the queue
+    for key in self.adjlist : 
+      if key not in settled:
+        self.q.put((self.dis[key],key))
+    #print("Queue State ==>",self.q.queue)
+        
+  def __str__(self):
+    return "Normal"
+
+if __name__ =="__main__":
+  print("*"*40)
+  G = Graph(5)
+  G.addEge('a', 'b', 7)  
+  G.addEge('a', 'c', 9)
+  G.addEge('a', 'f', 14)
+  G.addEge('b', 'c', 10)
+  G.addEge('b', 'd', 15)
+  G.addEge('c', 'd', 11)
+  G.addEge('c', 'f', 2)
+  G.addEge('d', 'e', 6)
+  G.addEge('e', 'f', 9)
+  #G.printLis()
+  G.dijkstra('a')
+  #print(G)
+  targ = G.get_vertx('e')
+  path = [targ.data]
+  G.shortest(targ , path)
+  print(path[::-1])
+
